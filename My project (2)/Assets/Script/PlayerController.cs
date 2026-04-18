@@ -14,6 +14,11 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 3f;                               //이속
     public float jumpForce = 5.0f;
     private Animator myAnimator;
+    public float dashSpeed = 14f;
+    public float dashTime = 0.18f;
+
+    private bool isDashing = false;
+    private float dashTimer;
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -40,14 +45,23 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
         }
 
-      
-        if (Input.GetButtonDown("Jump") && isGround)
+        //점프 기능
+        if (Input.GetButtonDown("Jump") && isGround && !isDashing)
         {
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             isGround = false;
         }
 
-
+        //점프 모션
+        if (!isGround)
+        {
+            myAnimator.SetBool("isJump", true);
+        }
+        else
+        {
+            myAnimator.SetBool("isJump", false);
+        }
+        //움직임 애니메이션
         if (moveInput.x != 0)
         {
             myAnimator.SetBool("move", true);
@@ -58,7 +72,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-
+        //좌우 바꾸기,이동
         if (moveInput.x > 0)
         {
             transform.localScale = new Vector3(1, 1, 1);
@@ -67,7 +81,53 @@ public class PlayerController : MonoBehaviour
         {
             transform.localScale = new Vector3(-1, 1, 1);
         }
-        transform.Translate(Vector3.right * moveInput.x *moveSpeed * Time.deltaTime);
+            rb.linearVelocity =
+        new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
+        // 대쉬 시작
+        if (Input.GetKeyDown(KeyCode.LeftShift)
+         && !isDashing
+         && isGround)
+        {
+            isDashing = true;
+            dashTimer = dashTime;
+        }
+        //대쉬 문
+        if (isDashing)
+        {
+            myAnimator.SetBool("isDash", true);
+        }
+        else
+        {
+            myAnimator.SetBool("isDash", false);
+        }
+        if (isDashing)
+        {
+            dashTimer -= Time.deltaTime;
+
+            float direction = transform.localScale.x;
+
+            rb.linearVelocity = new Vector2(direction * dashSpeed, rb.linearVelocity.y);
+
+            if (dashTimer <= 0)
+            {
+                isDashing = false;
+            }
+
+            return; // 대쉬 중에는 일반 이동 막기
+        
+
+       
+
+            //공격
+            if (Input.GetKeyDown(KeyCode.V))
+        {
+            myAnimator.SetTrigger("attack");
+        }
+
+        
+
+        
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
