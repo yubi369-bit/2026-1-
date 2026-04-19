@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
 
     public bool isGround = true;
 
+    private Vector3 startPosition;                  //시작 위치
+
     private Vector2 moveInput;
     public float moveSpeed = 3f;                               //이속
     public float jumpForce = 5.0f;
@@ -24,6 +26,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         myAnimator = GetComponent<Animator>();
         myAnimator.SetBool("move", false);
+
     }
 
 
@@ -32,7 +35,10 @@ public class PlayerController : MonoBehaviour
     {
         moveInput = value.Get<Vector2>();
     }
-
+    void Start()
+    {
+        startPosition = transform.position; //시작 위치 저장
+    }
     // Update is called once per frame
     void Update()
     {
@@ -83,6 +89,13 @@ public class PlayerController : MonoBehaviour
         }
             rb.linearVelocity =
         new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
+
+        //공격
+            if (Input.GetKeyDown(KeyCode.V))
+        {
+            myAnimator.SetTrigger("attack");
+        }
+
         // 대쉬 시작
         if (Input.GetKeyDown(KeyCode.LeftShift)
          && !isDashing
@@ -91,6 +104,7 @@ public class PlayerController : MonoBehaviour
             isDashing = true;
             dashTimer = dashTime;
         }
+
         //대쉬 문
         if (isDashing)
         {
@@ -118,11 +132,7 @@ public class PlayerController : MonoBehaviour
 
        
 
-            //공격
-            if (Input.GetKeyDown(KeyCode.V))
-        {
-            myAnimator.SetTrigger("attack");
-        }
+            
 
         
 
@@ -133,9 +143,29 @@ public class PlayerController : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
-        {
+        {   
             isGround = true;
         }
+        if (collision.gameObject.CompareTag("Death"))
+        {
+            Die();
+        }
+    }
+    void Die()
+    {
+        //속도 먼저 초기화
+        rb.linearVelocity = Vector2.zero;
+
+        //위치 초기화
+        transform.position = startPosition;
+
+        //상태 초기화
+        isDashing = false;
+        isGround = true;
+
+        //애니 초기화
+        myAnimator.SetBool("isJump", false);
+        myAnimator.SetBool("isDash", false);
     }
 
 }
