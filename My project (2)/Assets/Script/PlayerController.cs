@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     public bool isGround = true;
 
     private Vector3 startPosition;                  //시작 위치
-
+    //움직임
     private Vector2 moveInput;
     public float moveSpeed = 3f;                               //이속
     public float jumpForce = 5.0f;
@@ -19,8 +19,18 @@ public class PlayerController : MonoBehaviour
     public float dashSpeed = 14f;
     public float dashTime = 0.18f;
 
+    //공격 히트 판정,대미지
+    public Transform attackPoint;
+    public float attackRange = 0.5f;
+    public int attackDamage = 1;
+    public LayerMask enemyLayers;
+
+    //대쉬 
     private bool isDashing = false;
     private float dashTimer;
+
+
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -42,6 +52,14 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            myAnimator.SetTrigger("attack");
+            Attack();
+            
+        }
+        //움직임
         if (rb.linearVelocity.y < 0)
         {
             rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;            //하강시 중력 증가
@@ -60,7 +78,7 @@ public class PlayerController : MonoBehaviour
 
         //점프 모션
         if (!isGround)
-        {
+        {   
             myAnimator.SetBool("isJump", true);
         }
         else
@@ -77,7 +95,6 @@ public class PlayerController : MonoBehaviour
             myAnimator.SetBool("move", false);
         }
 
-
         //좌우 바꾸기,이동
         if (moveInput.x > 0)
         {
@@ -91,10 +108,7 @@ public class PlayerController : MonoBehaviour
         new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
 
         //공격
-            if (Input.GetKeyDown(KeyCode.V))
-        {
-            myAnimator.SetTrigger("attack");
-        }
+          
 
         // 대쉬 시작
         if (Input.GetKeyDown(KeyCode.LeftShift)
@@ -127,15 +141,7 @@ public class PlayerController : MonoBehaviour
                 isDashing = false;
             }
 
-            return; // 대쉬 중에는 일반 이동 막기
-        
-
-       
-
-            
-
-        
-
+            return; // 대쉬 중에는 일반 이동 막기     
         
         }
     }
@@ -166,6 +172,33 @@ public class PlayerController : MonoBehaviour
         //애니 초기화
         myAnimator.SetBool("isJump", false);
         myAnimator.SetBool("isDash", false);
+    }
+
+    //공격 함수,히트판정
+    void Attack()
+    {
+        Collider2D[] hitEnemies =
+            Physics2D.OverlapCircleAll(
+                attackPoint.position,
+                attackRange,
+                enemyLayers
+            );
+
+        foreach (Collider2D enemy in hitEnemies)
+        {
+            enemy.GetComponent<Enemy>().TakeDamage(attackDamage);
+        }
+    }
+    //범위 보이기
+    void OnDrawGizmosSelected()
+    {
+        if (attackPoint == null)
+            return;
+
+        Gizmos.DrawWireSphere(
+            attackPoint.position,
+            attackRange
+        );
     }
 
 }
