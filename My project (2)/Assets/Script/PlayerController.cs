@@ -187,17 +187,10 @@ public class PlayerController : MonoBehaviour
             Destroy(collision.gameObject);
         }
 
-        // Death 트리거 닿았을 때
-        if (collision.CompareTag("Death"))
-        {
-            if (!isInvincible)
-            {
-                Die();
-            }
-        }
+        
 
         // Enemy 닿았을 때
-        if (collision.CompareTag("Enemy"))
+        if (collision.gameObject.CompareTag("Enemy"))
         {
             if (!isInvincible)
             {
@@ -222,9 +215,20 @@ public class PlayerController : MonoBehaviour
 
         foreach (Collider2D enemy in hitEnemies)
         {
-            enemy.GetComponent<Enemy>().TakeDamage(attackDamage);
+            Debug.Log("적 감지됨: " + enemy.name);
+
+            EnemyMonster e =
+                enemy.GetComponent<EnemyMonster>();
+
+            if (e != null)
+            {
+                Debug.Log("데미지 적용");
+
+                e.TakeDamage(attackDamage);
+            }
         }
     }
+
     //범위 보이기
     void OnDrawGizmosSelected()
     {

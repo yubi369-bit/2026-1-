@@ -8,6 +8,8 @@ TagManager:
   - Death
   - Enemy
   - Item
+  - Item1
+  - Item2
   layers:
   - Default
   - TransparentFX

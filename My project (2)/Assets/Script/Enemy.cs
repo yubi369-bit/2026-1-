@@ -2,32 +2,36 @@
 
 public class Enemy : MonoBehaviour
 {
-    //hp쪽
     public int maxHP = 3;
+
     private int currentHP;
 
-    //애니메이션 쪽
-    private Animator animator; 
+    private Animator animator;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         currentHP = maxHP;
-        animator = GetComponent<Animator>(); 
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        animator = GetComponent<Animator>();
+
+        Debug.Log(gameObject.name + " HP 시작: " + currentHP);
     }
 
     public void TakeDamage(int damage)
     {
         currentHP -= damage;
 
-        // ⭐ 맞았을 때 애니 실행
-        animator.SetTrigger("hit");
+        Debug.Log(
+            gameObject.name +
+            " 데미지 받음, 현재 HP: " +
+            currentHP
+        );
+
+        // ⭐ hit 애니메이션 실행
+        if (animator != null)
+        {
+            animator.SetTrigger("hit");
+        }
 
         if (currentHP <= 0)
         {
@@ -37,6 +41,8 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
+        Debug.Log(gameObject.name + " 파괴됨");
+
         Destroy(gameObject);
     }
 }
