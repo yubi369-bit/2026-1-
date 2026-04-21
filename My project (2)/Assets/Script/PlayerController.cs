@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -19,6 +20,10 @@ public class PlayerController : MonoBehaviour
     public float dashSpeed = 14f;
     public float dashTime = 0.18f;
 
+    //무적 코드
+    bool isInvincible = false;
+    float invincibleTime = 0f;
+
     //공격 히트 판정,대미지
     public Transform attackPoint;
     public float attackRange = 0.5f;
@@ -28,6 +33,8 @@ public class PlayerController : MonoBehaviour
     //대쉬 
     private bool isDashing = false;
     private float dashTimer;
+
+    
 
 
 
@@ -52,7 +59,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        //공격키
         if (Input.GetKeyDown(KeyCode.V))
         {
             myAnimator.SetTrigger("attack");
@@ -109,6 +116,15 @@ public class PlayerController : MonoBehaviour
 
         //공격
           
+        if (isInvincible)
+            {
+                invincibleTime -= Time.deltaTime;
+
+                if (invincibleTime <= 0f)
+                {
+                    isInvincible = false;
+                }
+            }
 
         // 대쉬 시작
         if (Input.GetKeyDown(KeyCode.LeftShift)
@@ -142,7 +158,9 @@ public class PlayerController : MonoBehaviour
             }
 
             return; // 대쉬 중에는 일반 이동 막기     
-        
+
+
+            
         }
     }
 
@@ -157,21 +175,39 @@ public class PlayerController : MonoBehaviour
             Die();
         }
     }
+
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        // 아이템 먹었을 때
+        if (collision.CompareTag("Item"))
+        {
+            isInvincible = true;
+            invincibleTime = 5f;
+
+            Destroy(collision.gameObject);
+        }
+
+        // Death 트리거 닿았을 때
+        if (collision.CompareTag("Death"))
+        {
+            if (!isInvincible)
+            {
+                Die();
+            }
+        }
+
+        // Enemy 닿았을 때
+        if (collision.CompareTag("Enemy"))
+        {
+            if (!isInvincible)
+            {
+                Die();
+            }
+        }
+    }
     void Die()
     {
-        //속도 먼저 초기화
-        rb.linearVelocity = Vector2.zero;
-
-        //위치 초기화
-        transform.position = startPosition;
-
-        //상태 초기화
-        isDashing = false;
-        isGround = true;
-
-        //애니 초기화
-        myAnimator.SetBool("isJump", false);
-        myAnimator.SetBool("isDash", false);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     //공격 함수,히트판정
